@@ -13,13 +13,14 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.Timer;
+//import javax.swing.Timer;
 
 public class NewJFrame extends javax.swing.JFrame {
     
@@ -60,6 +61,7 @@ public class NewJFrame extends javax.swing.JFrame {
         text.setFont(new java.awt.Font("Times New Roman", 1, 24));
         text.setText("Por favor pase el código de barra debajo del escaner");
         text.setLocation(this.getWidth()/2 - text.getWidth()/2, this.getHeight()/4*3 + text.getHeight());
+        
     }
     
     @SuppressWarnings("unchecked")
@@ -133,10 +135,12 @@ public class NewJFrame extends javax.swing.JFrame {
                 rs = conn.ExeccuteResultSet(query);
 
                 if (rs.next()) {
-                    
-                    TimePause(2,4,3000);
+                    SetLayout(2);
+                    TimePause(4,3000,3000);
+                    TimePause(1,8000,8000);
                 }else{
-                    TimePause(3,1,3000);
+                    SetLayout(3);
+                    TimePause(1, 3000,3000);
                 }
                 
                 //JOptionPane.showMessageDialog(null, "SELECT * FROM productos WHERE producto_codigo = "+codigo);
@@ -150,7 +154,7 @@ public class NewJFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_formKeyPressed
 
-    public void SetLayout(int action){
+    public void SetLayout(int action) throws SQLException, MalformedURLException{
         switch (action) {
             case 1: //Start window
                 this.getContentPane().setBackground(new Color(192,255,192));
@@ -158,9 +162,11 @@ public class NewJFrame extends javax.swing.JFrame {
                 icon.setText("<html><img src='file:" + imgURL + "Icon-Placeholder-1.png' width='100' height='100'>");
                 icon.setLocation(this.getWidth() / 2 - icon.getWidth() / 2, this.getHeight() / 4 - icon.getHeight());
                 image.setSize(200, 200);
+                image.setIcon(null);
                 image.setText("<html><img src='file:" + imgURL + "barcode-scan2.gif' width='200' height='200'>");
                 image.setLocation(this.getWidth() / 2 - image.getWidth() / 2, this.getHeight() / 2 - image.getHeight() / 2);
 
+                text.setSize(560, 30);
                 text.setFont(new java.awt.Font("Times New Roman", 1, 24));
                 text.setText("Por favor pase el código de barra debajo del escaner");
                 text.setLocation(this.getWidth() / 2 - text.getWidth() / 2, this.getHeight() / 4 * 3 + text.getHeight());
@@ -170,7 +176,6 @@ public class NewJFrame extends javax.swing.JFrame {
                 text.setSize(400,50);
                 text.setText("Cargando la información del producto");
                 text.setLocation(this.getWidth() / 2 - text.getWidth() / 2, this.getHeight() / 2 - text.getHeight());
-                image.setText("");
                 image.setIcon(null);
                 image.setSize(150, 150);
                 image.setText("<html><center><img src='file:" + imgURL + "loading-56.gif' width='150' height='150'></center>");
@@ -189,7 +194,6 @@ public class NewJFrame extends javax.swing.JFrame {
                 break;
             case 4: //result window
                 this.getContentPane().setBackground(new Color(192,255,192));
-                try {
                 text.setText("<html>" + rs.getString(2) + "<br><br>"
                         + "<center>$" + rs.getString(3) + "</center>"
                         + "<br><center>Stock: " + rs.getString(4) + "</center><br>"
@@ -200,38 +204,28 @@ public class NewJFrame extends javax.swing.JFrame {
                 image.setSize(250, 250);
                 image.setText("");
                 image.setIcon(new ImageIcon(new ImageIcon(new URL(rs.getString(5))).getImage().getScaledInstance(250, 250, Image.SCALE_DEFAULT)));
-                }catch(SQLException e){
-                    System.out.println(e);
-                } catch (MalformedURLException ex) {      
-                    System.out.println(ex);
-                }
-                image.setText("<html><img src='file:" + imgURL + "loading-56.gif' width='200' height='200'>");
                 image.setLocation(this.getWidth()/4 - image.getWidth()/2, this.getHeight()/4 + 20);
                 break;
 
         }
     }
     
-    public void TimePause(int firstTask, int secondTask, int time) {
-        sec = 0;
-        ActionListener taskPerformer = new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                if (sec == 0) {
-                    SetLayout(secondTask);
+    public void TimePause(int task, int Ptime, int Rtime) {
+        Timer t = new Timer();
+        t.schedule(new TimerTask(){
+            @Override
+            public void run(){
+                try {
+                    SetLayout(task);
+                } catch (SQLException ex) {
+                    Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(NewJFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                sec+=1000;
-                if (sec == 3) {
-                    timer.stop();
-                } 
-                
+                t.cancel();
+                t.purge();
             }
-        };
-        timer = new Timer(3000, taskPerformer);
-        timer.setRepeats(false);
-        timer.start();
-
-        SetLayout(firstTask);
-
+        }, Ptime, Rtime);
     }
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
